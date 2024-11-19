@@ -130,11 +130,11 @@ runs:
     - name: Commit newly generated pages
       working-directory: ${{ inputs.publishing-dir }}
       run: |
-        if [ -z "${{ env.branch_exists }}" ]; then
-          git add .
-          git commit -m "GH Action: Update Quartz Pages"
-          git push
-        fi
+        git config --global user.name "${{ github.actor }}"
+        git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+        git add .
+        git commit -m "GH Action: Update Quartz Pages"
+        git push
       shell: bash
     
     - name: Upload Pages Artifact
