@@ -65,11 +65,8 @@ runs:
       working-directory: ${{ inputs.publishing-dir }}
       run: |
         if [ -z "${{ env.branch_exists }}" ]; then
-          git checkout -b ${{ inputs.gh-pages-branch }}
-          rm -rf *
-          rm -rf .*
-          git add .
-          git commit -m "Initial Pages Commit"
+          git switch --orphan ${{ inputs.gh-pages-branch }}
+          git commit --allow-empty -m "Initial Pages Commit"
           git push origin ${{ inputs.gh-pages-branch }}
         fi
       shell: bash
