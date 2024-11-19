@@ -77,49 +77,70 @@ runs:
         ref: ${{ inputs.quartz-version }}
         path: ${{ inputs.publishing-dir }}/.build
     
-    # - name: Apply Quartz Setup/Configuration
-    #   run: |
-    #     mkdir -p "${CONFIG_DIR}"
-    #     rsync -a "${CONFIG_DIR}/" "${QUARTZ_DIR}"
-    #   shell: bash
-    #   env:
-    #     CONFIG_DIR: ${{ inputs.quartz-config-dir }}
-    #     QUARTZ_DIR: ${{ inputs.publishing-dir }}/.build
+    - name: Apply Quartz Setup/Configuration
+      run: |
+        mkdir -p "${CONFIG_DIR}"
+        rsync -a "${CONFIG_DIR}/" "${QUARTZ_DIR}"
+      shell: bash
+      env:
+        CONFIG_DIR: ${{ inputs.quartz-config-dir }}
+        QUARTZ_DIR: ${{ inputs.publishing-dir }}/.build
 
-    # - name: Copy Markdown notes for publishing
-    #   run: |
-    #     mkdir -p "${NOTES_DIR}"
-    #     rsync -a "${NOTES_DIR}/" "${QUARTZ_DIR}/${CONTENT_DIR}/"
-    #   shell: bash
-    #   env:
-    #     NOTES_DIR: ${{ inputs.notes-dir }}
-    #     QUARTZ_DIR: ${{ inputs.publishing-dir }}/.build
-    #     CONTENT_DIR: ${{ inputs.quartz-content-dir }}
+    - name: Copy Markdown notes for publishing
+      run: |
+        mkdir -p "${NOTES_DIR}"
+        rsync -a "${NOTES_DIR}/" "${QUARTZ_DIR}/${CONTENT_DIR}/"
+      shell: bash
+      env:
+        NOTES_DIR: ${{ inputs.notes-dir }}
+        QUARTZ_DIR: ${{ inputs.publishing-dir }}/.build
+        CONTENT_DIR: ${{ inputs.quartz-content-dir }}
 
-    # - name: Setup Node.js
-    #   uses: actions/setup-node@v4
-    #   with:
-    #     node-version: ${{ inputs.node-version }}
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
     
-    # - name: Install Dependencies
-    #   working-directory: ${{ inputs.publishing-dir }}/.build
-    #   run: npm ci
-    #   shell: bash
+    - name: Install Dependencies
+      working-directory: ${{ inputs.publishing-dir }}/.build
+      run: npm ci
+      shell: bash
 
-    # - name: Build Quartz Site
-    #   working-directory: ${{ inputs.publishing-dir }}/.build
-    #   run: npx quartz build
-    #   shell: bash
+    - name: Build Quartz Site
+      working-directory: ${{ inputs.publishing-dir }}/.build
+      run: npx quartz build
+      shell: bash
 
-    # - name: Copy Quartz Site to Version directory
-    #   run: |
-    #     rm -rf /path/to/directory
-    #   shell: bash
+    - name: Copy Quartz Site to Version directory
+      run: |
+        rm -rf "${VERSION_DIR}"
+        rsync -a "${BUILD_DIR}/" "${VERSION_DIR}"
+      shell: bash
+      env:
+        VERSION_DIR: ${{ inputs.publishing-dir }}/${{ inputs.deployment-version }}
+        BUILD_DIR: ${{ inputs.publishing-dir }}/.build
+
+    - name: Remove Build Directory
+      run: |
+        rm -rf "${BUILD_DIR}"
+      shell: bash
+      env:
+        BUILD_DIR: ${{ inputs.publishing-dir }}/.build
+
+    - name: Commit newly generated pages
+      working-directory: ${{ inputs.publishing-dir }}
+      run: |
+        if [ -z "${{ env.branch_exists }}" ]; then
+          git add .
+          git commit -m "GH Action: Update Quartz Pages"
+          git push
+        fi
+      shell: bash
     
-    # - name: Upload Pages Artifact
-    #   uses: actions/upload-pages-artifact@v3
-    #   with:
-    #     path: ${{ inputs.publishing-dir }}
+    - name: Upload Pages Artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: ${{ inputs.publishing-dir }}
     
-    # - name: Deploy to GitHub Pages
-    #   uses: actions/deploy-pages@v4
+    - name: Deploy to GitHub Pages
+      uses: actions/deploy-pages@v4
