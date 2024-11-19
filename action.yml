@@ -1,0 +1,125 @@
+name: 'Publish Versioned Quartz GitHub Pages'
+description: 'Publishes versioned Quartz sites to GitHub Pages'
+inputs:
+  notes-dir:
+    description: 'Path to the directory that contains the Markdown notes to be published.'
+    required: false
+    default: 'docs'
+  quartz-config-dir:
+    description: 'Path to the directory that contains files that should override the default setup/configuration of Quartz'
+    required: false
+    default: 'docs/.quartz-config'
+  quartz-repo:
+    description: 'Repository of Quartz fork that should be used'
+    required: false
+    default: 'jackyzha0/quartz'
+  quartz-version:
+    description: 'Version tag or commit hash of Quartz that should be used'
+    required: false
+    default: ''
+  quartz-content-dir:
+    description: 'Directory inside the Quartz directory, where the Markdown files need to be placed'
+    required: false
+    default: 'content'
+  publishing-dir:
+    description: 'Path inside the repository that is used as a workspace during the workflow (this directory should not be already be used)'
+    required: false
+    default: '.quartz-publish'
+  node-version:
+    description: 'Node.js version to use for the Quartz build'
+    required: false
+    default: '20'
+  
+  # Versioning parameters
+  deployment-version:
+    description: 'Version name under which the Quartz site should be deployed'
+    required: false
+    default: 'current'
+  gh-pages-branch:
+    description: 'Branch where the generated sites should be stored'
+    required: false
+    default: 'gh-pages'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Create Workspace directory
+      run: mkdir -p "${{ inputs.publishing-dir }}"
+      shell: bash
+
+    - name: Check if Pages Branch exists
+      id: check-branch
+      working-directory: ${{ inputs.publishing-dir }}
+      run: |
+        BRANCH_EXISTS=$(git ls-remote --heads origin ${{ inputs.gh-pages-branch }})
+        echo "branch_exists=${BRANCH_EXISTS}" >> $GITHUB_ENV
+      shell: bash
+
+    - name: Create Pages Branch if it doesn't exist
+      working-directory: ${{ inputs.publishing-dir }}
+      run: |
+        if [ -z "${{ env.branch_exists }}" ]; then
+          git checkout -b ${{ inputs.gh-pages-branch }}
+          git push origin ${{ inputs.gh-pages-branch }}
+        fi
+      shell: bash
+
+    - name: Checkout Pages Branch
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ inputs.gh-pages-branch }}
+        path: ${{ inputs.publishing-dir }}
+    
+    - name: Checkout Quartz Repository
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ inputs.quartz-repo }}
+        ref: ${{ inputs.quartz-version }}
+        path: ${{ inputs.publishing-dir }}/.build
+    
+    # - name: Apply Quartz Setup/Configuration
+    #   run: |
+    #     mkdir -p "${CONFIG_DIR}"
+    #     rsync -a "${CONFIG_DIR}/" "${QUARTZ_DIR}"
+    #   shell: bash
+    #   env:
+    #     CONFIG_DIR: ${{ inputs.quartz-config-dir }}
+    #     QUARTZ_DIR: ${{ inputs.publishing-dir }}/.build
+
+    # - name: Copy Markdown notes for publishing
+    #   run: |
+    #     mkdir -p "${NOTES_DIR}"
+    #     rsync -a "${NOTES_DIR}/" "${QUARTZ_DIR}/${CONTENT_DIR}/"
+    #   shell: bash
+    #   env:
+    #     NOTES_DIR: ${{ inputs.notes-dir }}
+    #     QUARTZ_DIR: ${{ inputs.publishing-dir }}/.build
+    #     CONTENT_DIR: ${{ inputs.quartz-content-dir }}
+
+    # - name: Setup Node.js
+    #   uses: actions/setup-node@v4
+    #   with:
+    #     node-version: ${{ inputs.node-version }}
+    
+    # - name: Install Dependencies
+    #   working-directory: ${{ inputs.publishing-dir }}/.build
+    #   run: npm ci
+    #   shell: bash
+
+    # - name: Build Quartz Site
+    #   working-directory: ${{ inputs.publishing-dir }}/.build
+    #   run: npx quartz build
+    #   shell: bash
+
+    # - name: Copy Quartz Site to Version directory
+    #   run: |
+    #     rm -rf /path/to/directory
+    #   shell: bash
+    
+    # - name: Upload Pages Artifact
+    #   uses: actions/upload-pages-artifact@v3
+    #   with:
+    #     path: ${{ inputs.publishing-dir }}
+    
+    # - name: Deploy to GitHub Pages
+    #   uses: actions/deploy-pages@v4
