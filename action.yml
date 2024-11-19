@@ -43,6 +43,12 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Setup Git
+      run: |
+        git config --global user.name "${{ github.actor }}"
+        git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+      shell: bash
+
     - name: Create Workspace directory
       run: mkdir -p "${{ inputs.publishing-dir }}"
       shell: bash
@@ -60,6 +66,7 @@ runs:
       run: |
         if [ -z "${{ env.branch_exists }}" ]; then
           git checkout -b ${{ inputs.gh-pages-branch }}
+          git rm -rf .
           git push origin ${{ inputs.gh-pages-branch }}
         fi
       shell: bash
@@ -114,7 +121,7 @@ runs:
     - name: Copy Quartz Site to Version directory
       run: |
         rm -rf "${VERSION_DIR}"
-        rsync -a "${BUILD_DIR}/" "${VERSION_DIR}"
+        rsync -a "${BUILD_DIR}/public/" "${VERSION_DIR}"
       shell: bash
       env:
         VERSION_DIR: ${{ inputs.publishing-dir }}/${{ inputs.deployment-version }}
@@ -130,8 +137,6 @@ runs:
     - name: Commit newly generated pages
       working-directory: ${{ inputs.publishing-dir }}
       run: |
-        git config --global user.name "${{ github.actor }}"
-        git config --global user.email "${{ github.actor }}@users.noreply.github.com"
         git add .
         git commit -m "GH Action: Update Quartz Pages"
         git push
