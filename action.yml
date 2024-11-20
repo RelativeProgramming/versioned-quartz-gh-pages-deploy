@@ -48,6 +48,11 @@ runs:
         git config --global user.name "${{ github.actor }}"
         git config --global user.email "${{ github.actor }}@users.noreply.github.com"
       shell: bash
+    
+    - name: Extract current branch name
+      shell: bash
+      run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+      id: extract_branch
 
     - name: Create Workspace directory
       run: mkdir -p "${{ inputs.publishing-dir }}"
@@ -61,6 +66,12 @@ runs:
         echo "branch_exists=${BRANCH_EXISTS}" >> $GITHUB_ENV
       shell: bash
 
+    - name: Checkout Repo to create empty Pages Branch
+      if: ${{ env.branch_exists == "" }}
+      uses: actions/checkout@v4
+      with:
+        path: ${{ inputs.publishing-dir }}
+
     - name: Create Pages Branch if it doesn't exist
       working-directory: ${{ inputs.publishing-dir }}
       run: |
@@ -72,6 +83,7 @@ runs:
       shell: bash
 
     - name: Checkout Pages Branch
+      if: ${{ env.branch_exists != "" }}
       uses: actions/checkout@v4
       with:
         ref: ${{ inputs.gh-pages-branch }}
