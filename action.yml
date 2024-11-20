@@ -1,5 +1,9 @@
 name: 'Publish Versioned Quartz GitHub Pages'
 description: 'Publishes versioned Quartz sites to GitHub Pages'
+author: RelativeProgramming
+branding:
+  icon: book-open
+  color: gray-dark
 inputs:
   notes-dir:
     description: 'Path to the directory that contains the Markdown notes to be published.'
