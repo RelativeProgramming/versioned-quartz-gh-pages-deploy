@@ -5,7 +5,7 @@ The hosted static sites are stored on a separate branch.
 
 For the simpler, unversioned setup see [Quartz GitHub Pages Deployment Action](https://github.com/RelativeProgramming/quartz-gh-pages-deploy)
 
-**Usage:**
+## Usage
 See `action.yml` for parameters.
 
 **Example Configuration:**
@@ -25,7 +25,7 @@ jobs:
 - modified `quartz.config.ts` is placed under `./docs/.quartz-config/`
 
 
-**Tips:**
+## Tips
 You can freely add or remove content from the `gh-pages` branch (or the one you configured via the `gh-pages-branch` input).
 For Example: To redirect from the main page to the `current` page, just add a `index.html` with the follow content to the root directory of the `gh-pages` branch:
 
