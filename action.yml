@@ -67,7 +67,7 @@ runs:
       shell: bash
 
     - name: Checkout Repo to create empty Pages Branch
-      if: ${{ env.branch_exists == "" }}
+      if: ${{ env.branch_exists == '' }}
       uses: actions/checkout@v4
       with:
         path: ${{ inputs.publishing-dir }}
@@ -83,7 +83,7 @@ runs:
       shell: bash
 
     - name: Checkout Pages Branch
-      if: ${{ env.branch_exists != "" }}
+      if: ${{ env.branch_exists != '' }}
       uses: actions/checkout@v4
       with:
         ref: ${{ inputs.gh-pages-branch }}
