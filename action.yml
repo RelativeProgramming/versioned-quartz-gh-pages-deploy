@@ -83,7 +83,6 @@ runs:
       shell: bash
 
     - name: Checkout Pages Branch
-      if: ${{ env.branch_exists != '' }}
       uses: actions/checkout@v4
       with:
         ref: ${{ inputs.gh-pages-branch }}
